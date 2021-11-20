@@ -94,12 +94,9 @@ jobs:
             npm install
             npm audit fix --audit-level=critical
 
-  deploy-infrastruucture:
+  deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
-      branches:
-          only:
-            - main
     steps:
       - checkout
       - run: yum -y install tar gzip
