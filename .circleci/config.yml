@@ -12,9 +12,9 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-backend${CIRCLE_WORKFLOW_ID:0:7}
-            aws cloudformation delete-stack --stack-name udapeople-frontend${CIRCLE_WORKFLOW_ID:0:7}
-            aws s3 rb s3://udapeople${CIRCLE_WORKFLOW_ID:0:7} --force
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --delete
             exit 1
 
 jobs:
@@ -120,9 +120,10 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --stack-name "udapeople-backend${CIRCLE_WORKFLOW_ID:0:7}" \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-              --tags project=udapeople  
+              --tags project=udapeople
+              --region=us-east-1  
               exit 1
       - run:
           name: Ensure front-end infrastructure exists
@@ -130,14 +131,15 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople \
-              --stack-name "udapeople-frontend${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" 
+              --region:us-east-1 
               exit 1
       - run:
           name: Add back-end ip to ansible inventory
           command: |
             aws ec2 describe-instances \
-            --filter "Name=tag:Name, Value=backend${CIRCLE WORKFLOW ID:0:7}" \
+            --filter "Name=tag:Name, Value=backend-${CIRCLE WORKFLOW ID:0:7}" \
             --query 'Reservations[*].PublicIpAddress' \
             --output text >> .circle/ansible/inventory.txt
             BACKEND_IP=`cat .circleci/ansible/inventory.txt | head -2 | tail -1`
