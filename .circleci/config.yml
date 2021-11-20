@@ -1,6 +1,18 @@
 version: 2.1
-orbs:
-   slack: circleci/slack@4.5.0
+
+commands:
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      # Add parameter here 
+        
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            aws cloudformation delete --stack-name 
+            exit 1
 
 jobs:
   build-frontend:
@@ -126,6 +138,11 @@ jobs:
             --query 'Reservations[*].PublicIpAddress' \
             --output text >> .circle/ansible/inventory.txt
             exit 1
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+
 
 workflows:
   default:
