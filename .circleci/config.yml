@@ -150,7 +150,7 @@ jobs:
   
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11, amazon/aws-cli # Docker image here that supports Ansible
+      - image: python:3.7-alpine3.11 # Docker image here that supports Ansible
     steps:
       - checkout #Checkout code from git
       - add_ssh_keys:
@@ -160,6 +160,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            apk add openssh-client
             apk add --update ansible# Your code here
             apk add tar gzip jq curl 
             pip install awscli
