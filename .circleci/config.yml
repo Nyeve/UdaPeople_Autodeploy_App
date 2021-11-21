@@ -165,6 +165,8 @@ jobs:
             pip install awscli
             update_cache: yes
             apk add python3
+            npm install
+            npm install pm2 -g
             #exit 1
       - run:
           name: Configure server
