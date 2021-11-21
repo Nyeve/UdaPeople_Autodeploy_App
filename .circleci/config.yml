@@ -147,6 +147,35 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment
+  
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11# Docker image here that supports Ansible
+    steps:
+      - checkout #Checkout code from git
+      - add_ssh_keys:
+          fingerprints:  ["f3:c9:9c:81:ef:ab:f2:e4:c1:43:7d:40:b1:c5:a1:96"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible# Your code here
+            apk add tar gzip jq curl 
+            pip install awscli
+            #exit 1
+      - run:
+          name: Configure server
+          command: |
+            cd ~/project/.circleci/ansible
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-server.yml # Your code here
+            #exit 1
+      #name: setup prometheus node exporter
+          #command: |
+            #cd ~/project/.circleci/ansible
+            #ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-node-exporter.yml
+      - destroy-environment
+      
             
 workflows:
   default:
@@ -166,3 +195,5 @@ workflows:
           filters:
             branches:
               only: [main]#[test-feature-branch]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
