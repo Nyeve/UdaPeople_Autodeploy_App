@@ -160,10 +160,11 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add openssh-client
             apk add --update ansible# Your code here
-            apk add tar gzip jq curl 
+            apk add tar gzip curl jq 
             pip install awscli
+            update_cache: yes
+            apk add python3
             #exit 1
       - run:
           name: Configure server
