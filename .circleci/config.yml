@@ -175,7 +175,7 @@ jobs:
           name: Configure server
           command: |
             cd ~/project/.circleci/ansible
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-server.yml # Your code here
+            ANSIBLE_HOST_KEY_CHECKING=False  ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml # Your code here
             #exit 1
       - run:
           name: Install AWS CLI for rollback
