@@ -173,6 +173,11 @@ jobs:
             cd ~/project/.circleci/ansible
             ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-server.yml # Your code here
             #exit 1
+      - run:
+          name: Install AWS CLI for rollback
+          when: on_fail
+          command: |
+            apk add --update py3-pip && pip3 install --upgrade pip && pip3 install awscli
       #name: setup prometheus node exporter
           #command: |
             #cd ~/project/.circleci/ansible
