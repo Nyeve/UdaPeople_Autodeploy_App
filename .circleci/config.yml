@@ -244,7 +244,7 @@ jobs:
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
             npm install
-            npm audit fix --force
+            npm audit fix --audit-level=critical --force
             npm run migrations > migration_status
             cat migration_status
       - run:
