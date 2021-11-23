@@ -21,9 +21,9 @@ commands:
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
-      id:
+      workflow_id:
        type: string    
-       default:  ${CIRCLE_WORKFLOW_ID:0:7} 
+       default:  ${CIRCLE_WORKFLOW_ID:} 
     steps:
       - run:
           name: Revert migrations
@@ -33,7 +33,7 @@ commands:
             # See an example below
             #SUCCESS=$(curl -H "token: e52b52de-ee26-41a5-86e8-e8dcc3d995a5" --request GET https://api.memstash.io/values/migration_<< parameters.workflow_id >>)
             #if (( $SUCCESS == 1 ));
-            SUCCESS='curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}'
+            SUCCESS='curl -H "token: ${CIRCLE_WORKFLOW_ID:}" --request GET https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:}'
             if (( $SUCCESS==1 ));
             then
               cd ~/project/backend
@@ -241,12 +241,15 @@ jobs:
       - run:
           name: Send migration results to memstash
           command: |
-            echo "CIRCLE_WORKFLOW_ID: ${CIRCLE_WORKFLOW_ID}"
+            echo "CIRCLE_WORKFLOW_ID: ${CIRCLE_WORKFLOW_ID:}"
             if grep -q "has been executed successfully" migration_status
             then
               echo "DB migration succeeded"
-              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:}" --request PUT --data "1" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
             fi
+      - destroy-environment
+      - revert-migrations
+      
             
 workflows:
   default:
@@ -268,3 +271,5 @@ workflows:
               only: [main]#[test-feature-branch]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
