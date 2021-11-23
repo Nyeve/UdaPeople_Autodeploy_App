@@ -233,7 +233,7 @@ jobs:
           command: |
             # Your code here
             cd backend
-            echo ENVIRONMENT=$ENVIRONMENT > ".env"
+            echo ENVIROMENT=$ENVIROMENT > ".env"
             echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
             echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
             echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> ".env"
@@ -244,18 +244,23 @@ jobs:
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
             npm install
-            npm audit fix --audit-level=critical --force
-            npm run migrations > migration_status
-            cat migration_status
+            touch migrations_log.txt
+            npm run migrations >> migrations_log.txt
+            cat migrations_log.txt
       - run:
           name: Send migration results to memstash
+          working_directory: ./backend
           command: |
-            echo "CIRCLE_WORKFLOW_ID: ${CIRCLE_WORKFLOW_ID:}"
-            if grep -q "has been executed successfully" migration_status
-            then
-              echo "DB migration succeeded"
-              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:}" --request PUT --data "1" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
+            if grep -q "has been executed successfully" migrations.txt; then 
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:}" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+            else
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:}" --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
             fi
+            SUCCESS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:}" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            echo "${SUCCESS}" 
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
       - destroy-environment
       - revert-migrations
       
