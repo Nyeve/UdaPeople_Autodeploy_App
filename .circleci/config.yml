@@ -70,7 +70,7 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Build back-end
+          name: Build back-end 
           command: |
             cd backend
             npm install
@@ -236,6 +236,7 @@ jobs:
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
             npm install
+            npm audit fix
             npm run migrations > migration_status
             cat migration_status
       - run:
