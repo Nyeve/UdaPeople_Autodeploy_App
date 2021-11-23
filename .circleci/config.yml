@@ -17,6 +17,27 @@ commands:
             #aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force
             aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID:0:7}" --delete
             #exit 1
+  revert-migrations:
+description: Revert the last migration if successfully run in the current workflow.
+parameters:
+  workflow_id:
+    type: string      
+steps:
+  - run:
+      name: Revert migrations
+      when: on_fail
+      command: |
+        # Your Memstash GET URL code goes here
+        # See an example below
+        #SUCCESS=$(curl -H "token: e52b52de-ee26-41a5-86e8-e8dcc3d995a5" --request GET https://api.memstash.io/values/migration_<< parameters.workflow_id >>)
+        #if (( $SUCCESS == 1 ));
+        SUCCESS=`curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}`
+            if(( $SUCCESS==1 ));
+        then
+          cd ~/project/backend
+          npm install
+          npm run migration:revert
+        fi  
 
 jobs:
   build-frontend:
@@ -187,7 +208,41 @@ jobs:
             #cd ~/project/.circleci/ansible
             #ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-node-exporter.yml
       - destroy-environment
-      
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Run migration
+          command: |
+            # Your code here
+            cd backend
+            echo ENVIRONMENT=$ENVIRONMENT > ".env"
+            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
+            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
+            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> ".env"
+            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> ".env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> ".env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> ".env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> ".env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
+            npm install
+            npm run migrations > migration_status
+            cat migration_status
+      - run:
+          name: Send migration results to memstash
+          command: |
+            echo "CIRCLE_WORKFLOW_ID: ${CIRCLE_WORKFLOW_ID}"
+            if grep -q "has been executed successfully" migration_status
+            then
+              echo "DB migration succeeded"
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
+            fi
             
 workflows:
   default:
