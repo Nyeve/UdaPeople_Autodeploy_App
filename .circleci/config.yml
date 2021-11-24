@@ -189,6 +189,7 @@ jobs:
             #cd ~/project/.circleci/ansible
             #ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-node-exporter.yml
       - destroy-environment
+
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
@@ -197,40 +198,46 @@ jobs:
       - checkout
       - restore_cache:
           keys: [backend-build]
-      - attach_workspace:
-          at: ~/
-      #name: awscli install
-          #command: |
-            #sudo apt-get -y -qq update
-            #sudo apt-get -y -qq install python3
-            #sudo apt-get -qq install awscli
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get -y -qq update
+            sudo apt-get -y -qq install python3
+            sudo apt-get -qq install awscli
       - run:
           name: Run migration
           command: |
             cd backend
-            echo -e ENVIROMENT=$ENVIROMENT\n
-            echo -e TYPEORM_CONNECTION=$TYPEORM_CONNECTION\n 
-            echo -e TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR\n 
-            echo -e TYPEORM_ENTITIES=$TYPEORM_ENTITIES\n 
-            echo -e TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS\n 
-            echo -e TYPEORM_HOST=$TYPEORM_HOST\n
-            echo -e TYPEORM_PORT=$TYPEORM_PORT\n
-            echo -e TYPEORM_USERNAME=$TYPEORM_USERNAME\n
-            echo -e TYPEORM_PASSWORD=$TYPEORM_PASSWORD\n 
-            echo -e TYPEORM_DATABASE=$TYPEORM_DATABASE\n
-
-            npm install latest-version
-            npm update
-            npm run-script build
-            #npm audit fix --audit-level=critical --force
-            npm run migrations > migrations_dump.txt # Run and save the migration output
+            export NODE_ENV=production
+            export ENVIRONMENT=production
+            export VERSION=1
+            export TYPEORM_CONNECTION=postgres
+            export TYPEORM_MIGRATIONS_DIR=./src/migrations
+            export TYPEORM_ENTITIES=./src/modules/**/*.entity.ts
+            export TYPEORM_MIGRATIONS=./src/migrations/*.ts
+            # Use these values for the local PG database from the Docker Compose2 file
+            export TYPEORM_HOST=database-1.cat9sageciir.us-east-1.rds.amazonaws.com
+            export TYPEORM_PORT=5432
+            export TYPEORM_USERNAME=postgres
+            export TYPEORM_PASSWORD=Bren@17den
+            export TYPEORM_DATABASE=postgres
+            npm audit fix --audit-level=critical --force
+            npm install 
+            npm run build
+            npm run migrations > output.txt
+            cat output.txt
       - run:
-          name: memstash
+          name: Send migration results to memstash
           command: |
-            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            cd backend
+            if [ `grep -c "has been executed successfully" output.txt` -gt 0 ] 
             then
             curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0;7}
             fi
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - backend 
         #- destroy-environment
         #- revert-migrations
           
