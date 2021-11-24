@@ -208,16 +208,16 @@ jobs:
           name: Run migration
           command: |
             cd backend
-            echo -e ENVIROMENT=$ENVIROMENT\n > ".env"
-            echo -e TYPEORM_CONNECTION=$TYPEORM_CONNECTION\n >> ".env"
-            echo -e TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR\n >> ".env"
-            echo -e TYPEORM_ENTITIES=$TYPEORM_ENTITIES\n >> ".env"
-            echo -e TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS\n >> ".env"
-            echo -e TYPEORM_HOST=$TYPEORM_HOST\n >> ".env"
-            echo -e TYPEORM_PORT=$TYPEORM_PORT\n >> ".env"
-            echo -e TYPEORM_USERNAME=$TYPEORM_USERNAME\n >> ".env"
-            echo -e TYPEORM_PASSWORD=$TYPEORM_PASSWORD\n >> ".env"
-            echo -e TYPEORM_DATABASE=$TYPEORM_DATABASE\n >> ".env"
+            echo -e ENVIROMENT=$ENVIROMENT\n
+            echo -e TYPEORM_CONNECTION=$TYPEORM_CONNECTION\n 
+            echo -e TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR\n 
+            echo -e TYPEORM_ENTITIES=$TYPEORM_ENTITIES\n 
+            echo -e TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS\n 
+            echo -e TYPEORM_HOST=$TYPEORM_HOST\n
+            echo -e TYPEORM_PORT=$TYPEORM_PORT\n
+            echo -e TYPEORM_USERNAME=$TYPEORM_USERNAME\n
+            echo -e TYPEORM_PASSWORD=$TYPEORM_PASSWORD\n 
+            echo -e TYPEORM_DATABASE=$TYPEORM_DATABASE\n
 
             npm install latest-version
             npm update
