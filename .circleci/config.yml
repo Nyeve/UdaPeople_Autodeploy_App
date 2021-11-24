@@ -223,7 +223,7 @@ jobs:
             export TYPEORM_DATABASE=postgres
 
             npm audit fix --audit-level=critical --force
-            pm install --registry=https://registry.npmjs.org/ 
+            npm install --registry=https://registry.npmjs.org/ 
             #npm install --registry=https://custom.npm.registry.com/ 
             npm run start
             npm run migrations > output.txt
