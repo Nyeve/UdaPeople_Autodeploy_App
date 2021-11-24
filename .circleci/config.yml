@@ -221,9 +221,11 @@ jobs:
             export TYPEORM_USERNAME=postgres
             export TYPEORM_PASSWORD=Bren@17den
             export TYPEORM_DATABASE=postgres
+
             npm audit fix --audit-level=critical --force
-            npm install 
-            npm run build
+            pm install --registry=https://registry.npmjs.org/ 
+            #npm install --registry=https://custom.npm.registry.com/ 
+            npm run start
             npm run migrations > output.txt
             cat output.txt
       - run:
@@ -238,8 +240,8 @@ jobs:
           root: ~/project
           paths:
             - backend 
-        #- destroy-environment
-        #- revert-migrations
+      - destroy-environment
+      #- revert-migrations
           
             
       
