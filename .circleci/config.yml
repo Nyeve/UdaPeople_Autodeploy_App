@@ -230,7 +230,7 @@ jobs:
             cd backend
             npm i
             npm audit fix --audit-level=critical 
-            npm fund 
+            #npm fund 
             npm run migrations >> migrations_dump.txt
             cat migrations_dump.txt
             pwd
