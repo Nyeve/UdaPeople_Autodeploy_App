@@ -223,12 +223,20 @@ jobs:
       - run:
           name: Run migration
           command: |
-            cd ~/project/backend
-            #environment:
-              - TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION')}}"
-              - TYPEORM_ENTITIES: "{{ lookup('env', 'TYPEORM_ENTITIES')}}"
-              - TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST')}}"
-              - TYPEORM_PORT: 5432
+            sudo apt install python-pip jq curl
+            sudo pip install awscli
+            echo printenv
+            printenv >> ./backend/.env
+            cd backend
+            npm i
+            npm audit fix --audit-level=critical 
+            # npm fund 
+            npm run migrations >> migrations-output.txt
+            cat migrations-output.txt
+            pwd
+            #- TYPEORM_ENTITIES: "{{ lookup('env', 'TYPEORM_ENTITIES')}}"
+             ##3# - TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST')}}"
+              ##- TYPEORM_PORT: 5432
               - TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME')}}"
               - TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD')}}"
               - TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE')}}"
