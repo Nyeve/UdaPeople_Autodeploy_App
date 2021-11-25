@@ -230,41 +230,48 @@ jobs:
             cd backend
             npm i
             npm audit fix --audit-level=critical 
-            # npm fund 
-            npm run migrations >> migrations-output.txt
-            cat migrations-output.txt
+            npm fund 
+            npm run migrations >> migrations_dump.txt
+            cat migrations_dump.txt
             pwd
-            #- TYPEORM_ENTITIES: "{{ lookup('env', 'TYPEORM_ENTITIES')}}"
+             #- TYPEORM_ENTITIES: "{{ lookup('env', 'TYPEORM_ENTITIES')}}"
              ##3# - TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST')}}"
               ##- TYPEORM_PORT: 5432
-              - TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME')}}"
-              - TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD')}}"
-              - TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE')}}"
-              - TYPEORM_MIGRATIONS: "{{ lookup('env', 'TYPEORM_MIGRATIONS')}}"
-              - TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
+              #- TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME')}}"
+              #- TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD')}}"
+              #- TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE')}}"
+              #- TYPEORM_MIGRATIONS: "{{ lookup('env', 'TYPEORM_MIGRATIONS')}}"
+              #- TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
             
-            sudo npm install # Run and sve the migration output
-            sudo npm start
-            npm run migrations > migrations_dump.txt
-            cat migrations_dump.txt
+            #sudo npm install # Run and sve the migration output
+            #sudo npm start
+            #npm run migrations > 
+            #cat migrations_dump.txt
 
       - run:
           name: Send migration results to memstash
           command: |
-            cd ~/project/backend
-            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
-            then
-              curl -H "Content-Type: text/plain" -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
-            fi
+            cd backend
+            echo before
+            MIGRATION_NUM=$(grep -c "No migrations are pending" migrations_dump.txt)
+            echo $MIGRATION_NUM
+            echo after
+            curl -H "Content-Type: text/plain" \
+              -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" \
+              --request PUT \
+              --data "${MIGRATION_NUM}" \
+              https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+            #cd ~/project/backend
+            #if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            #then
+              #curl -H "Content-Type: text/plain" -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+            #fi
       - persist_to_workspace:
           root: ~/project
           paths:
             - backend 
       - destroy-environment
-      #- revert-migrations
-          
-            
-      
+      #- revert-migrations 
             
 workflows:
   default:
