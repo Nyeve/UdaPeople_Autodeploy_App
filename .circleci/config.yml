@@ -294,13 +294,13 @@ jobs:
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
             cat frontend/.env   
 
-      - run:
-          name: Install tar/gzip utility
-          command: |
-            sudo apt update
-            sudo apt install tar
-            sudo apt install gzip
-            #yum -y install tar
+      - run: yum -y install tar gzip
+          #name: Install tar/gzip utility
+          #command: |
+            #sudo apt update
+            #sudo apt install tar
+            #sudo apt install gzip
+            #yum -y install tar gzip
             #yum -y install gzip
       - run: 
          name: deploy frontend objects
