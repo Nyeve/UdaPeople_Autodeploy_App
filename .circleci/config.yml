@@ -297,14 +297,16 @@ jobs:
       - run:
           name: Install tar/gzip utility
           command: |
-            yum -y install tar
-            yum -y install gzip
+            sudo apt update
+            sudo apt install tar
+            sudo apt install gzip
+            #yum -y install tar
+            #yum -y install gzip
       - run: 
-         name: deply frontend objects
+         name: deploy frontend objects
          command: |
           npm install
           npm run build
-          yum -y install tar
           tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
           aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
           "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
