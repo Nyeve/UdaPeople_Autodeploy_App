@@ -228,8 +228,7 @@ jobs:
             echo printenv
             printenv >> ./backend/.env
             cd backend
-            npm i
-            npm audit fix --audit-level=critical 
+            npm install
             #npm fund 
             npm run migrations >> migrations_dump.txt
             cat migrations_dump.txt
