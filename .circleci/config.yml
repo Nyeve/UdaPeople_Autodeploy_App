@@ -263,7 +263,7 @@ jobs:
           paths:
             - backend 
       - destroy-environment
-      #- revert-migrations 
+      - revert-migrations 
             
 workflows:
   default:
