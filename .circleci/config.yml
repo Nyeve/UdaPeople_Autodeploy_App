@@ -276,7 +276,11 @@ jobs:
             sudo apt-get -y -qq update
             sudo apt-get -y -qq install python3
             sudo apt-get -qq install awscli
-      - run: yum -y install tar gzip
+            yum -y install tar
+            yum -y install gzip
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs
+      #- run: yum -y install tar gzip
       - attach_workspace:
           at: .
       - run:
