@@ -285,16 +285,17 @@ jobs:
             cd frontend
             npm install
             npm run build
+      - run: yum -y install tar gzip
       - run:
           name: server_ip to frontend
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances...............)
+            export BACKEND_IP=$curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}#  (aws ec2 describe-instances...............)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
-            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            echo API_URL="http://${BACKEND_IP}:3030" >> "frontend/.env"
+            echo ENVIRONMENT= production >> "frontend.env"
+            echo NODE_ENV= production >> "frontend.env"
             cat frontend/.env   
-
-      - run: yum -y install tar gzip
           #name: Install tar/gzip utility
           #command: |
             #sudo apt update
@@ -305,8 +306,6 @@ jobs:
       - run: 
          name: deploy frontend objects
          command: |
-          npm install
-          npm run build
           tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
           aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
           #"s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
