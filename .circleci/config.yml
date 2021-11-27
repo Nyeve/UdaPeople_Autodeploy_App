@@ -278,6 +278,7 @@ jobs:
             sudo apt-get -y -qq update
             sudo apt-get -y -qq install python3
             sudo apt-get -qq install awscli
+      - run: yum -y install tar gzip
       - run:
           name: Rebuild frontend with backend API Url
           working_directory: ./frontend
@@ -285,7 +286,7 @@ jobs:
             cd frontend
             npm install
             npm run build
-      - run: yum -y install tar gzip
+    
       - run:
           name: server_ip to frontend
           command: |
