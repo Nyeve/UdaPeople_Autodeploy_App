@@ -301,7 +301,7 @@ jobs:
           name: Rebuild frontend with backend API Url
           working_directory: ./frontend
           command: |
-            cd frontend
+            #cd frontend
             npm install
             npm run build 
           #name: Install tar/gzip utility
