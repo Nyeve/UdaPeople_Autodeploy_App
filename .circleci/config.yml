@@ -286,7 +286,11 @@ jobs:
       - run:
           name: server_ip to frontend
           command: |
-            BACKEND_IP=$(curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/UdaPeople-${CIRCLE_WORKFLOW_ID:0:7}-BackendIP)
+            export BACKEND_IP=$(aws ec2 describe-instances \
+              --region ${AWS_DEFAULT_REGION} \
+              --filters 'Name=tag:project,Values=udapeople-backend' \
+              --query 'Reservations[*].Instances[0].PublicIpAddress' \
+              --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> "frontend/.env"
