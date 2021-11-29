@@ -247,17 +247,7 @@ jobs:
             then
               echo "DB migration succeeded"
               curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
-            fi
-            #echo before
-            #MIGRATION_NUM=$(grep -c "No migrations are pending" migrations_dump.txt)
-            #echo $MIGRATION_NUM
-            #echo after
-            #curl -H "Content-Type: text/plain" \
-              #-H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" \
-              #--request PUT \
-              #--data "${MIGRATION_NUM}" \
-              #https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
-              
+            fi            
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -273,9 +263,6 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            #sudo apt-get -y -qq update
-            #sudo apt-get -y -qq install python3
-            #sudo apt-get -qq install awscli
             yum -y install tar
             yum -y install gzip
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
@@ -304,11 +291,10 @@ jobs:
             #cd frontend
             npm install
             npm run build 
-        
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dis
       - run:
           name: deploy frontend objects
           command: |
-            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 sync dist
             s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers --recursive
           #"s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
@@ -317,7 +303,6 @@ jobs:
           paths:
             - frontend/dist
       - destroy-environment
-      - revert-migrations 
   #deploy-backend:
   #docker: 
       #- image: python:3.7-alpine3.11 
