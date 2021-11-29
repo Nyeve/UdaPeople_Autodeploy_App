@@ -290,11 +290,13 @@ jobs:
       
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.7-alpine3.11 
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints:  ["f3:c9:9c:81:ef:ab:f2:e4:c1:43:7d:40:b1:c5:a1:96"] 
+      - restore_cache:
+          keys: [backend-build]
       - attach_workspace:
           at: ~/
       - run:
@@ -316,9 +318,17 @@ jobs:
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+
             tar -C backend -czvf artifact.tar.gz .
+            ls -la
             cd .circleci/ansible
+            cat inventory.txt
+            export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i inventory.txt deploy-backend.yml
+
+            #tar -C backend -czvf artifact.tar.gz .
+            #cd .circleci/ansible
+            #ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment
       - revert-migrations
 
