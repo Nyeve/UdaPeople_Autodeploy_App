@@ -318,13 +318,28 @@ jobs:
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            cat .env
 
-            tar -C backend -czvf artifact.tar.gz .
+            #tar -C backend -czvf artifact.tar.gz .
+            #ls -la
+            #cd .circleci/ansible
+            #cat inventory.txt
+            #export ANSIBLE_HOST_KEY_CHECKING=False
+            #ansible-playbook -i inventory.txt deploy-backend.yml
             ls -la
-            cd .circleci/ansible
+            npm i
+            npm run build
+            cd dist
+            cp ../package.json .
+            zip -rq dist.zip *
+            mkdir -p ~/project/.circleci/ansible/roles/deploy-backend/files/
+            mv dist.zip ~/project/.circleci/ansible/roles/deploy-backend/files/
+            ls ~/project/.circleci/ansible/roles/deploy-backend/files/
+
+            cd ~/project/.circleci/ansible
             cat inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            ansible-playbook -i inventory.txt deploy-backend.yml -vv
 
             #tar -C backend -czvf artifact.tar.gz .
             #cd .circleci/ansible
