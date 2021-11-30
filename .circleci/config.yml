@@ -415,6 +415,30 @@ jobs:
             #- project/.circleci/oldworkflowid.txt
       - destroy-environment
 
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Get old stack workflow id
+          command: |
+            OldWorkflowID=$(curl -H "token:${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/workflowid)
+            export OldWorkflowID="$OldWorkflowID"
+            echo Old Workflow Id: "${OldWorkflowID}"
+            # export STACKS=($(aws cloudformation list-stacks --region eu-central-1 --query "StackSummaries[*]|[?starts_with(StackName,'uda')].StackName" --stack-status-filter CREATE_COMPLETE)) 
+            CurrentWorkflowID=${CIRCLE_WORKFLOW_ID}
+      
+      - run:
+          name: Remove old stacks and files
+          command: |
+            if [[ "${CurrentWorkflowID}" != "${OldWorkflowID}" ]]
+            then
+              aws s3 rm s3://udapeople-${OldWorkflowID}/ --recursive
+              aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
+              aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
+            fi                    
+
 workflows:
   default:
     jobs:
@@ -451,3 +475,5 @@ workflows:
           requires: [deploy-backend,deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
