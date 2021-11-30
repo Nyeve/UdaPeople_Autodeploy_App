@@ -364,7 +364,8 @@ jobs:
                --request GET https://api.memstash.io/values/UdapeopleDns)
               export BACKEND_STATUS="http://${BACKEND_IP}:3030/api/status"
               echo ${BACKEND_STATUS}
-              curl "http://${BACKEND_IP}:3030/api/status" 
+              #curl "http://${BACKEND_IP}:3030/api/status"
+              curl -H "token: IP-${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/IP 
             #export BACKEND_IP=$(aws ec2 describe-instances \
               #--filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               #--query 'Reservations[*].Instances[*].PublicIpAddress' \
