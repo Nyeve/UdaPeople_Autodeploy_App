@@ -405,12 +405,11 @@ jobs:
             #echo $OldWorkflowId >> ./.circleci/oldworkflowid.txt
             cat ./.circleci/oldworkflowid.txt
 
-            aws cloudformation deploy \
-              --template-file .circleci/files/cloudfront.yml \
-              --stack-name InitialStack-$OldWorkflowId \
-              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople
-
+            aws cloudformation update-stack \
+              --use-previous-template \
+              --stack-name cloudfront-stack \
+              --parameters ParameterKey=WorkflowID,ParameterValue=$CIRCLE_WORKFLOW_ID,UsePreviousValue=false
+             
               echo OldWorkflowId= "{$OldWorkflowId}"
               echo current workflowid= "${CIRCLE_WORKFLOW_ID:0:7}"
       - persist_to_workspace:
