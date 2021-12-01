@@ -188,12 +188,20 @@ jobs:
             && rm -rf /var/cache/apk/*
             apk add --update ansible
             #exit 1
+      #- run:
+          #name: Configure server
+          #command: |
+            #cd ~/project/.circleci/ansible
+            #ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-server.yml # Your code here
       - run:
-          name: Configure server
+          name: "Get the IP Address of the Backend EC2 instance and create inventory"
           command: |
-            cd ~/project/.circleci/ansible
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-server.yml # Your code here
-            #exit 1
+           echo -e "[web]\n" > ./.circleci/ansible/inventory
+            aws ec2 describe-instances \
+           --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+           --query 'Reservations[*].Instances[*].PublicIpAddress' \
+           --output text >> ./.circleci/ansi
+          #exit 1
       - run:
           name: Install AWS CLI for rollback
           when: on_fail
