@@ -1,5 +1,10 @@
 Public Url to GitHub repository (not private) [URL01]
+https://github.com/Nyeve/UdaPeople_Autodeploy_App
 Public URL for your S3 Bucket (aka, your green candidate front-end) [URL02]
+https://udapeople-cf28719.s3.amazonaws.com/index.html
 Public URL for your CloudFront distribution (aka, your blue production front-end) [URL03]
+https://arn:aws:cloudfront::756437418345:distribution/E1PEGKHSTWNLHT
 Public URLs to deployed application back-end in EC2 [URL04]
+https://ec2-54-159-137-65.compute-1.amazonaws.com
+https://ec2-54-165-118-91.compute-1.amazonaws.com
 Public URL to your Prometheus Server [URL05]
