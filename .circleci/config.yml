@@ -4,7 +4,7 @@ commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
-        id:
+        workflow_id:
           type: string
           default: ${CIRCLE_WORKFLOW_ID:0:7}  # Add parameters>>
     steps:
@@ -20,6 +20,10 @@ commands:
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+        workflow_id:
+          type: string
+          default: ${CIRCLE_WORKFLOW_ID:0:7}
     steps:
       - run:
           name: Revert migrations
@@ -168,85 +172,41 @@ jobs:
             cat ./.circleci/ansible/inventory.txt
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
               --request PUT --data "$URLS" https://api.memstash.io/values/url_${WorkFlowID} 
-        
-              #--query 'Reservations[*].Instances[*].PublicIpAddress' \
-            # --output text >> inventory.txt
-           # cat inventory.txt
+      
            # #exit 1
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy-environment
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
   
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11 # Docker image here that supports Ansible
+      - image: python:3.9.1-alpine3.12
     steps:
-      - checkout #Checkout code from git
+      - checkout
+      # Add the SSH key fingerprint to job so that Ansible will have access to the EC2 instance via SSH.
       - add_ssh_keys:
-          fingerprints:  ["f3:c9:9c:81:ef:ab:f2:e4:c1:43:7d:40:b1:c5:a1:96"]
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/ansible/inventory.txt
+          fingerprints:
+            - "f3:c9:9c:81:ef:ab:f2:e4:c1:43:7d:40:b1:c5:a1:96"
+      # Reuse the workspace from the deploy-infrastructure job  
+      # Attaching a workspace is like attaching a hard drive
+      - attach_workspace:
+          at: ./
       - run:
           name: Install dependencies
           command: |
-            apk add --no-cache \
-                python3 \
-                py3-pip \
-            && pip3 install --upgrade pip \
-            && pip3 install \
-                awscli \
-            && rm -rf /var/cache/apk/*
-            apk add --update ansible
-            apk add --update curl
-            #exit 1
-      - run:
-          name: collate backend  files
-          command: |
-            ls backend       
-            tar -czvf backend.tar.gz backend
-            mkdir -p ~/project/.circleci/ansible/roles/configure-server/files/
-            mv backend.tar.gz  ~/project/.circleci/ansible/roles/configure-server/files/
-            cp -f ~/project/backend/package.json  ~/project/.circleci/ansible/roles/configure-server/files/
+            apk add --update ansible aws-cli
       - run:
           name: Configure server
-          working_directory: ./.circleci/ansible
-          no_output_timeout: 30m
           command: |
-              backend_ip=$(curl -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request GET https://api.memstash.io/values/backend-ip)
-              echo Backend IP: $backend_ip
-              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-server.yml --extra-vars "backend_ip=$backend_ip"
-      #- run:
-          #name: Configure server
-          #command: |
-            #cd ~/project/.circleci/ansible
-            #ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-server.yml # Your code here
-      
-      #- run:
-         # name: "Get the IP Address of the Backend EC2 instance and create inventory"
-         # command: |
-
-           #echo -e "[web]\n" > ./.circleci/ansible/inventory
-            #aws ec2 describe-instances \
-           #--filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-           #--query 'Reservations[*].Instances[*].PublicIpAddress' \
-           #--output text >> ./.circleci/ansi
-          #exit 1
-      - run:
-          name: Install AWS CLI for rollback
-          when: on_fail
-          command: |
-            apk add --update py3-pip && pip3 install --upgrade pip && pip3 install awscli
-      - run:    
-          name: setup prometheus node exporter
-          command: |
-           cd ~/project/.circleci/ansible
-           ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-prometheus-node-exporter.yml
-      - destroy-environment
-      - revert-migrations
+            cd ./.circleci/ansible/      
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   run-migrations:
     docker:
@@ -288,8 +248,10 @@ jobs:
           root: ~/project
           paths:
             - backend 
-      - destroy-environment
-      - revert-migrations 
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 
   deploy-frontend:
     docker:
@@ -325,7 +287,8 @@ jobs:
             ls -la           
             aws s3 sync dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      - destroy-environment
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       
   deploy-backend:
     docker:
@@ -366,8 +329,10 @@ jobs:
             cat inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i inventory.txt deploy-backend.yml
-      - destroy-environment
-      - revert-migrations
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
     docker:
@@ -404,8 +369,10 @@ jobs:
              return 1
             fi
             
-      - destroy-environment
-      - revert-migrations
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cloudfront-update:
     docker:
