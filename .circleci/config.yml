@@ -212,7 +212,7 @@ jobs:
             mv backend.tar.gz  ~/project/.circleci/ansible/roles/configure-server/files/
             cp -f ~/project/backend/package.json  ~/project/.circleci/ansible/roles/configure-server/files/
       - run:
-          name: Configure backend server
+          name: Configure server
           working_directory: ./.circleci/ansible
           no_output_timeout: 30m
           command: |
@@ -256,12 +256,7 @@ jobs:
       - checkout
       - restore_cache:
           keys: [backend-build]
-      #- run:
-          #name: Install dependencies
-          #command: |
-            #sudo apt-get -y -qq update
-            #sudo apt-get -y -qq install python3
-            #sudo apt-get -qq install awscli
+      
       - run:
           name: Run migration
           command: |
@@ -371,10 +366,6 @@ jobs:
             cat inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i inventory.txt deploy-backend.yml
-       
-            #tar -C backend -czvf artifact.tar.gz .
-            #cd .circleci/ansible
-            #ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment
       - revert-migrations
 
@@ -399,14 +390,6 @@ jobs:
               export BACKEND_STATUS="http://${BACKEND_IP}:3030/api/status"
               echo ${BACKEND_STATUS}
               curl -H "token: IP-${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backendip
-              #curl "http://$"CIRCLE_WORKFLOW_ID:0:7":3030/api/status"
-
-             #BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
-              # --request GET https://api.memstash.io/values/UdapeopleDns)
-              #export BACKEND_STATUS="http://${BACKEND_IP}:3030/api/status"
-              #echo ${BACKEND_STATUS}
-              #curl "http://${BACKEND_IP}:3030/api/status"
-              #curl -H "token: IP-${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/IP 
               
               
       - run:
@@ -447,11 +430,11 @@ jobs:
             --stack-name udapeople-cloudfront \
             --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
             --tags project=udapeople
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/oldworkflowid.txt
-      - destroy-environment
+      #- persist_to_workspace:
+          #root: ~/
+          #paths:
+            #- project/.circleci/oldworkflowid.txt
+      #- destroy-environment
 
   cleanup:
     docker:
