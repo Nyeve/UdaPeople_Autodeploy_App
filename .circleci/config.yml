@@ -167,7 +167,9 @@ jobs:
             cat /tmp/ip >> ./.circleci/ansible/inventory.txt
             cat ./.circleci/ansible/inventory.txt
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
-              --request PUT --data "${BACKEND_IP}" 
+              --request PUT --data "$URLS" https://api.memstash.io/values/url_${WorkFlowID} 
+            curl --help
+            curl --manual
               #--query 'Reservations[*].Instances[*].PublicIpAddress' \
             # --output text >> inventory.txt
            # cat inventory.txt
