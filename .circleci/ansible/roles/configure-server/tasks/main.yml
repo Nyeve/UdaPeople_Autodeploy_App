@@ -41,10 +41,10 @@
     production: yes
     state: present
 
-- name: Start PM2 server
-  become: true  
-  shell: |
-    npm install
-    pm2 stop default
-    pm2 start npm -- start
-    pm2 start main.js --update-env
+# - name: Start PM2 server
+#   become: true  
+#   shell: |
+#     npm install
+#     pm2 stop default
+#     pm2 start npm -- start
+   
