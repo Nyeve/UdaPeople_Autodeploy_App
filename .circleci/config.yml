@@ -394,6 +394,13 @@ jobs:
       - run:
           name: backend url / smoke test backend
           command: |
+            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
+              --request GET https://api.memstash.io/values/backendip)
+              export BACKEND_STATUS="http://${BACKEND_IP}:3030/api/status"
+              echo ${BACKEND_STATUS}
+              curl -H "token: IP-${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backendip
+              #curl "http://$"CIRCLE_WORKFLOW_ID:0:7":3030/api/status"
+
              #BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
               # --request GET https://api.memstash.io/values/UdapeopleDns)
               #export BACKEND_STATUS="http://${BACKEND_IP}:3030/api/status"
@@ -401,12 +408,7 @@ jobs:
               #curl "http://${BACKEND_IP}:3030/api/status"
               #curl -H "token: IP-${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/IP 
               
-              BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
-              --request GET https://api.memstash.io/values/backendip)
-              export BACKEND_STATUS="http://${BACKEND_IP}:3030/api/status"
-              echo ${BACKEND_STATUS}
-              curl "http://${BACKEND_IP}:3030/api/status"
-
+              
       - run:
           name: Frontend smoke test.
           command: | 
