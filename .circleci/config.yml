@@ -141,10 +141,7 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
               --tags project=udapeople 
               #exit 1
-              ARN=$(aws s3 ls | grep udapeople)
-              echo "ARN=$ARN"
-              curl -H "Content-Type: text/plain" -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request PUT \
-              --data "$ARN" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID:0:7}
+            
       - run:
           name: Ensure front-end infrastructure exists
           command: |
@@ -154,6 +151,10 @@ jobs:
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" 
               #exit 1
+              ARN=$(aws s3 ls | grep udapeople)
+              echo "ARN=$ARN"
+              curl -H "Content-Type: text/plain" -H "token: da647fff-0676-4705-a4fd-bda47a1e6aaa" --request PUT \
+              --data "$ARN" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -210,14 +211,12 @@ jobs:
             cp -f ~/project/backend/package.json  ~/project/.circleci/ansible/roles/configure-server/files/
       - run:
           name: Configure backend server
-          no_output_timeout: 30m
           working_directory: ./.circleci/ansible
+          no_output_timeout: 30m
           command: |
-            backend_ip=$(curl -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request GET https://api.memstash.io/values/backend-ip)
-            echo ${backend_ip} >> ./inventory.txt
-            cat inventory.txt
-            echo Backend IP: $backend_ip
-            ansible-playbook -i inventory.txt configure-server.yml --extra-vars "backend_ip=$backend_ip"
+              backend_ip=$(curl -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request GET https://api.memstash.io/values/backend-ip)
+              echo Backend IP: $backend_ip
+              ANSIBLE_HOST_KEY_CHECKING=Falseansible-playbook -i inventory.txt configure-server.yml --extra-vars "backend_ip=$backend_ip"
       #- run:
           #name: Configure server
           #command: |
