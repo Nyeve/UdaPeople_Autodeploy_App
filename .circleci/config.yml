@@ -202,6 +202,7 @@ jobs:
                 awscli \
             && rm -rf /var/cache/apk/*
             apk add --update ansible
+            apk add --update curl
             #exit 1
       - run:
           name: collate backend  files
