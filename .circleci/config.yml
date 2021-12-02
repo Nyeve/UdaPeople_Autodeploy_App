@@ -193,7 +193,7 @@ jobs:
       # Reuse the workspace from the deploy-infrastructure job  
       # Attaching a workspace is like attaching a hard drive
       - attach_workspace:
-          at: ./
+          at: ~/
       - run:
           name: Install dependencies
           command: |
