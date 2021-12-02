@@ -219,7 +219,7 @@ jobs:
           command: |
               backend_ip=$(curl -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request GET https://api.memstash.io/values/backend-ip)
               echo Backend IP: $backend_ip
-              ANSIBLE_HOST_KEY_CHECKING=Falseansible-playbook -i inventory.txt configure-server.yml --extra-vars "backend_ip=$backend_ip"
+              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-server.yml --extra-vars "backend_ip=$backend_ip"
       #- run:
           #name: Configure server
           #command: |
