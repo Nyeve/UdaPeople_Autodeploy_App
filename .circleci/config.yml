@@ -141,6 +141,10 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
               --tags project=udapeople 
               #exit 1
+              ARN=$(aws s3 ls | grep udapeople)
+              echo "ARN=$ARN"
+              curl -H "Content-Type: text/plain" -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request PUT \
+              --data "$ARN" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Ensure front-end infrastructure exists
           command: |
@@ -153,13 +157,14 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances \
-              --region ${AWS_DEFAULT_REGION} \
-              --filters 'Name=tag:project,Values=udapeople-backend' \
-              --query 'Reservations[*].Instances[0].PublicIpAddress' \
-              --output text)
-            echo "${BACKEND_IP}" >> .circleci/ansible/inventory.txt
-            cat .circleci/ansible/inventory.txt
+            export WorkFlowID="${CIRCLE_WORKFLOW_ID:0:7}"
+            echo "Workflow id: $WorkFlowID"
+            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-$WorkFlowID" --output text > /tmp/ip
+            echo "Found IP: " $(cat /tmp/ip)
+            curl -H "Content-Type: text/plain" -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request PUT --data "$(cat /tmp/ip)" https://api.memstash.io/values/backend-ip
+            echo "[web]" > ./.circleci/ansible/inventory.txt
+            cat /tmp/ip >> ./.circleci/ansible/inventory.txt
+            cat ./.circleci/ansible/inventory.txt
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
               --request PUT --data "${BACKEND_IP}" 
               #--query 'Reservations[*].Instances[*].PublicIpAddress' \
@@ -195,19 +200,39 @@ jobs:
             && rm -rf /var/cache/apk/*
             apk add --update ansible
             #exit 1
+      - run:
+          name: collate backend  files
+          command: |
+            ls backend       
+            tar -czvf backend.tar.gz backend
+            mkdir -p ~/project/.circleci/ansible/roles/configure-server/files/
+            mv backend.tar.gz  ~/project/.circleci/ansible/roles/configure-server/files/
+            cp -f ~/project/backend/package.json  ~/project/.circleci/ansible/roles/configure-server/files/
+      - run:
+          name: Configure backend server
+          no_output_timeout: 30m
+          working_directory: ./.circleci/ansible
+          command: |
+            backend_ip=$(curl -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request GET https://api.memstash.io/values/backend-ip)
+            echo ${backend_ip} >> ./inventory.txt
+            cat inventory.txt
+            echo Backend IP: $backend_ip
+            ansible-playbook -i inventory.txt configure-server.yml --extra-vars "backend_ip=$backend_ip"
       #- run:
           #name: Configure server
           #command: |
             #cd ~/project/.circleci/ansible
             #ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt configure-server.yml # Your code here
-      - run:
-          name: "Get the IP Address of the Backend EC2 instance and create inventory"
-          command: |
-           echo -e "[web]\n" > ./.circleci/ansible/inventory
-            aws ec2 describe-instances \
-           --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-           --query 'Reservations[*].Instances[*].PublicIpAddress' \
-           --output text >> ./.circleci/ansi
+      
+      #- run:
+         # name: "Get the IP Address of the Backend EC2 instance and create inventory"
+         # command: |
+
+           #echo -e "[web]\n" > ./.circleci/ansible/inventory
+            #aws ec2 describe-instances \
+           #--filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+           #--query 'Reservations[*].Instances[*].PublicIpAddress' \
+           #--output text >> ./.circleci/ansi
           #exit 1
       - run:
           name: Install AWS CLI for rollback
