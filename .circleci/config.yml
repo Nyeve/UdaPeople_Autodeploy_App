@@ -153,7 +153,7 @@ jobs:
               #exit 1
               ARN=$(aws s3 ls | grep udapeople)
               echo "ARN=$ARN"
-              curl -H "Content-Type: text/plain" -H "token: da647fff-0676-4705-a4fd-bda47a1e6aaa" --request PUT \
+              curl -H "Content-Type: text/plain" -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request PUT \
               --data "$ARN" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Add back-end ip to ansible inventory
@@ -166,7 +166,7 @@ jobs:
             echo "[web]" > ./.circleci/ansible/inventory.txt
             cat /tmp/ip >> ./.circleci/ansible/inventory.txt
             cat ./.circleci/ansible/inventory.txt
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
               --request PUT --data "${BACKEND_IP}" 
               #--query 'Reservations[*].Instances[*].PublicIpAddress' \
             # --output text >> inventory.txt
