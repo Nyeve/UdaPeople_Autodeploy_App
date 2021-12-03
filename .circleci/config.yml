@@ -322,9 +322,10 @@ jobs:
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             
             cat backend/.env
-
+            cp package* ./dist
             tar -C backend -czvf artifact.tar.gz .
             ls -la
+
             cd .circleci/ansible
             cat inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False

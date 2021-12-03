@@ -74,3 +74,5 @@
     sudo npm install pm2 -g
     pm2 stop default
     pm2 start npm --name backend -- start
+    cd dist
+    pm2 start main.js --update-env
