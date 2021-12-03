@@ -235,7 +235,7 @@ jobs:
           command: |
             cd backend
             echo "CIRCLE_WORKFLOW_ID: ${CIRCLE_WORKFLOW_ID:0:7}"
-            if grep -q "has been executed successfully" migration_status
+            if grep -q "has been executed successfully" migrations_dump.txt
             then
               echo "DB migration succeeded"
               curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "1" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7}
