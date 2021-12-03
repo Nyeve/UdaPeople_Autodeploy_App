@@ -164,9 +164,12 @@ jobs:
           command: |
             export WorkFlowID="${CIRCLE_WORKFLOW_ID:0:7}"
             echo "Workflow id: $WorkFlowID"
-            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-$WorkFlowID" --output text > /tmp/ip
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-$WorkFlowID" --output text)
+            #aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-$WorkFlowID" --output text > /tmp/ip
             echo "Found IP: " $(cat /tmp/ip)
-            curl -H "Content-Type: text/plain" -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request PUT --data "$(cat /tmp/ip)" https://api.memstash.io/values/backend-ip
+            #curl -H "Content-Type: text/plain" -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request PUT --data "$(cat /tmp/ip)" https://api.memstash.io/values/backend-ip
+            curl -H "Content-Type: text/plain" -H "token: a2d26416-e9b8-4ee8-a3c2-35aeb1c9e392" --request PUT --data "${BACKEND_IP}" https://api.memstash.io/values/
+            #curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "${BACKEND_IP}" https://api.memstash.io/values/ 
             echo "[web]" > ./.circleci/ansible/inventory.txt
             cat /tmp/ip >> ./.circleci/ansible/inventory.txt
             cat ./.circleci/ansible/inventory.txt
@@ -347,11 +350,13 @@ jobs:
       - run:
           name: backend url / smoke test backend
           command: |
+            #BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
+            #  --request GET https://api.memstash.io/values/backend-ip)
             BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
-              --request GET https://api.memstash.io/values/backend-ip)
+              --request GET https://api.memstash.io/values/BACKEND_IP)
               export BACKEND_STATUS="http://${BACKEND_IP}:3030/api/status"
               echo ${BACKEND_STATUS}
-              curl -H "token: IP-${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend-ip
+              curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/BACKEND_IP
                      
       - run:
           name: Frontend smoke test.
