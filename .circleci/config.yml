@@ -226,13 +226,9 @@ jobs:
             printenv >> ./backend/.env
             cd backend
             npm install
-            #npm fund 
             npm run migrations >> migrations_dump.txt
             echo cat migrations_dump.txt
             pwd
-
-            #npm run migrations > 
-            #cat migrations_dump.txt
 
       - run:
           name: Send migration results to memstash
@@ -322,7 +318,7 @@ jobs:
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             
             cat backend/.env
-            cp package* ./dist
+            #cp package* ./dist
             tar -C backend -czvf artifact.tar.gz .
             ls -la
 
