@@ -357,7 +357,7 @@ jobs:
             #  --request GET https://api.memstash.io/values/backend-ip)
             BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
               --request GET https://api.memstash.io/values/BACKEND_IP)
-              export BACKEND_STATUS="http://{BACKEND_IP}:3030/api/status"
+              export BACKEND_STATUS="http://${BACKEND_IP}:3030/api/status"
               echo ${BACKEND_STATUS}
               curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/BACKEND_IP
                      
