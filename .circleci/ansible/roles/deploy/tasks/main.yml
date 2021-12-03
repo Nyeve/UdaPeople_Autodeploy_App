@@ -75,4 +75,4 @@
     pm2 stop default
     pm2 start npm --name backend -- start
     cd dist
-    pm2 start main.js --update-env
+   # pm2 start main.js --update-env
