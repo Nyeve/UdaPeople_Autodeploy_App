@@ -58,8 +58,7 @@
 - name: "install peers dependency"
   become: true
   shell: "sudo npm install -g npm-install-peers"
-    args:
-    chdir: "/home/ubuntu
+    cd: "/home/ubuntu
 
 - name: "Create directory for backend"
   file:
