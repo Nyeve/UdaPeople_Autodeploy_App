@@ -206,10 +206,12 @@ jobs:
           command: |
             cd ./.circleci/ansible/      
             ansible-playbook -i inventory.txt configure-server.yml
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      
 
   run-migrations:
     docker:
@@ -247,10 +249,11 @@ jobs:
           root: ~/project
           paths:
             - backend 
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      - revert-migrations:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
+       
 
   deploy-frontend:
     docker:
@@ -330,10 +333,11 @@ jobs:
             cat inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i inventory.txt deploy-backend.yml
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      
 
   smoke-test:
     docker:
@@ -371,11 +375,11 @@ jobs:
             else
              return 1
             fi
-            
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}     
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      - revert-migrations:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      
 
   cloudfront-update:
     docker:
@@ -394,9 +398,9 @@ jobs:
       - run:
             name: Update cloudfront distribution
             command: |
-              set TERM=xterm
-              echo "PATH"
-              pwd
+            # set TERM=xterm
+            #  echo "PATH"
+            #  pwd
               
               aws cloudformation list-exports \
               --query "Exports[?Name=='WorkflowID'].Value" \
