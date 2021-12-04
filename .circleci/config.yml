@@ -394,14 +394,14 @@ jobs:
       - run:
             name: Update cloudfront distribution
             command: |
-            set TERM=xterm
+              set TERM=xterm
               echo "PATH"
               pwd
               
               aws cloudformation list-exports \
               --query "Exports[?Name=='WorkflowID'].Value" \
               --no-paginate \
-              --output text > ./.circleci/ansible/originalWorkflowID.txt
+              --output text >> ./.circleci/ansible/originalWorkflowID.txt
               if [ -s "./.circleci/ansible/originalWorkflowID.txt" ]
               then
                 cat ./.circleci/ansible/originalWorkflowID.txt
