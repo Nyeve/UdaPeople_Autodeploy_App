@@ -53,12 +53,7 @@
   apt:
     name: ["nodejs", "npm", "python3", "tar", "gzip", "git"]
     state: latest
-    update_cache: yes
-
-- name: "install peers dependency"
-  become: true
-  shell: "sudo npm install -g npm-install-peers"
-    cd /home/ubuntu
+    update_cache: yes    
 
 - name: "Create directory for backend"
   file:
