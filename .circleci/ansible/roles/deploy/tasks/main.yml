@@ -55,6 +55,12 @@
     state: latest
     update_cache: yes
 
+- name: "install peers dependency"
+  become: true
+  shell: "sudo npm install -g npm-install-peers"
+    args:
+    chdir: "/home/ubuntu
+
 - name: "Create directory for backend"
   file:
     path: /home/ubuntu/backend/
@@ -74,4 +80,35 @@
     sudo npm install pm2 -g
     pm2 stop default
     pm2 start npm --name backend -- start
+  async: 45
+  poll: 0
     
+
+#- name: "clean up server"
+ # become: true
+ # shell: "sudo rm -rf *"
+#- name: "git clone repo"
+# become: true
+#  shell: "git clone https://github.com/Nyeve/UdaPeople_Autodeploy_App.git"
+# - name: "install dependency"
+#   become: true
+#   shell: "sudo npm install"
+#   args:
+#     chdir: "/home/ubuntu/UdaPeople_Autodeploy_App/backend"
+# - name: "install peers dependency"
+#   become: true
+#   shell: "sudo npm install -g npm-install-peers"
+#   args:
+#     chdir: "/home/ubuntu/UdaPeople_Autodeploy_App/backend"
+# - name: "build backend server"
+#   become: true
+#   shell: "npm run build"
+#   args:
+#     chdir: "/home/ubuntu/UdaPeople_Autodeploy_App/backend"
+# - name: "run backend server"
+#   become: true
+#   shell: "pm2 start npm --name 'udapeople' -- start"
+#   args:
+#     chdir: "/home/ubuntu/UdaPeople_Autodeploy_App/backend"
+#   async: 45
+#   poll: 0
