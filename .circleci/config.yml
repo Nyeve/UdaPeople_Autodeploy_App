@@ -396,41 +396,29 @@ jobs:
             yum install -y nodejs
 
       - run:
-            name: Update cloudfront distribution
-            command: |
-            # set TERM=xterm
-            #  echo "PATH"
-            #  pwd
+          name: Update cloudfront distribution
+          command: |
+            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`OldWorkflowID\`].Value" --no-paginate --output text)
+            OldWorkflowID=${OldWorkflowID#udapeople-}
+            export CurrentWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+            CurrentWorkflowID=${CurrentWorkflowID#udapeople-}
+            echo CurrentWorkflowID: "${CurrentWorkflowID}"
+            echo newWorkFlowId: "${CIRCLE_WORKFLOW_ID:0:7}"
+            echo OldWorkflowID: "${OldWorkflowID}"  
+                   
+            if [[ $OldWorkflowID = EMPTY ]] 
+            then             
+              echo "Oldworkflow is InitialStack"
+              OldWorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"                
+            else
+              OldWorkflowID=$CurrentWorkflowID
+            fi
               
-              aws cloudformation list-exports \
-              --query "Exports[?Name=='WorkflowID'].Value" \
-              --no-paginate \
-              --output text >> ./.circleci/ansible/originalWorkflowID.txt
-              if [ -s "./.circleci/ansible/originalWorkflowID.txt" ]
-              then
-                cat ./.circleci/ansible/originalWorkflowID.txt
-                originalWorkflowID=`cat ./.circleci/ansible/originalWorkflowID.txt`
-              else
-                echo "New stack will be created"
-              fi
-              if [ -n "$originalWorkflowID" ]
-              then
-                echo $originalWorkflowID
-                StackOption=update-stack
-                StackName="cloudfront"
-              else
-                StackOption=create-stack
-                StackName=udapeople-${CIRCLE_WORKFLOW_ID:0:7}
-              fi
-              aws cloudformation $StackOption \
-              --stack-name $StackName \
-              --template-body file://./.circleci/files/cloudfront.yml \
-              --parameter ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
-              --tags Key=Name,Value=Udapeople-production-${CIRCLE_WORKFLOW_ID:0:7}
-        - persist_to_workspace:
-            root: .circleci/ansible/
-            paths:
-              - originalWorkflowID.txt
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name InitialStack \
+              --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" OldWorkflowID="${OldWorkflowID}" \
+              --tags project=udapeople
       # - run:
       #     name: Get old stack workflow id & Update cloudfront distribution
       #     command: |
@@ -463,17 +451,27 @@ jobs:
         - run:
             name: Get Old Stack Workflow ID and Remove old stacks and files
             command: |
-              originalWorkflowID=`cat ./.circleci/ansible/originalWorkflowID.txt`
-              echo $originalWorkflowID
-              if [ -n "$originalWorkflowID" ]
-              then
-                aws s3 rm s3://udapeople-$originalWorkflowID --recursive
-                aws s3 rb s3://udapeople-$originalWorkflowID --force
-                aws cloudformation delete-stack --stack-name udapeople-frontend-$originalWorkflowID
-                aws cloudformation delete-stack --stack-name udapeople-backend-$originalWorkflowID
-              else
-                echo "No old workflow exists"
-              fi 
+              export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`OldWorkflowID\`].Value" --no-paginate --output text)
+            OldWorkflowID=${OldWorkflowID#udapeople-}
+            echo OldWorkflowID: "${OldWorkflowID}"
+            echo CIRCLE_WORKFLOW_ID: "${CIRCLE_WORKFLOW_ID:0:7}"
+            
+            # Fetch the stack names          
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+            echo Stack names: "${STACKS[@]}"
+            # You can use any condition like:
+            # if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
+            # if [[ "${OldWorkflowID}" =~ "${STACKS[@]}"  ]]
+            # if [[ "${CIRCLE_WORKFLOW_ID:0:7}" =~ "${OldWorkflowID}" ]]
+            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            then
+                # your code goes here
+                echo "Stack exist, remove....${OldWorkflowID}"
+                echo "s3://udapeople-${OldWorkflowID}"
+                aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+                aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+                aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"                            
+            fi 
       # - run:
       #     name: Get old stack workflow id
       #     command: |
