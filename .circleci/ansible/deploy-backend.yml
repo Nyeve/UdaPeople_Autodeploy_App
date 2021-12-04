@@ -9,9 +9,9 @@
     - ansible_host_key_checking: false
     - ansible_stdout_callback: yaml
 
-- name: "clean up server"
-  become: true
-  shell: "sudo rm -rf *"
+#- name: "clean up server"
+ # become: true
+ # shell: "sudo rm -rf *"
 - name: "git clone repo"
   become: true
   shell: "git clone https://github.com/Nyeve/UdaPeople_Autodeploy_App.git"
