@@ -440,7 +440,7 @@ jobs:
     steps:
       - checkout
       - run: yum -y install tar gzip jq npm
-      - run: apk add --update curl npm  && pip3 install --upgrade pip && pip3 install awscli
+      #- run: apk add --update curl npm  && pip3 install --upgrade pip && pip3 install awscli
 
       - run:
             name: Fetch OldStack Workflow ID
