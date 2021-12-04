@@ -16,10 +16,10 @@
 # become: true
 #  shell: "git clone https://github.com/Nyeve/UdaPeople_Autodeploy_App.git"
 - name: "install dependency"
-   become: true
-   shell: "sudo npm install"
-   args:
-     chdir: "/home/ubuntu/UdaPeople_Autodeploy_App/backend"
+  become: true
+  shell: "sudo npm install"
+  args:
+    chdir: "/home/ubuntu/UdaPeople_Autodeploy_App/backend"
 - name: "install peers dependency"
   become: true
   shell: "sudo npm install -g npm-install-peers"
