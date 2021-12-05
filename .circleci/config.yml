@@ -345,7 +345,7 @@ jobs:
           name: Build Backend Files
           command: |
             cd backend
-            #m -rf package-lock.json.
+            rm -rf package-lock.json.
             npm cache clean --force
             npm cache verify
             npm i
