@@ -345,9 +345,12 @@ jobs:
           name: Build Backend Files
           command: |
             cd backend
+            m -rf package-lock.json.
+            npm cache clean --force
+            npm cache verify
             npm i
             npm run build
-            npm audit fix --audit-level=critical
+            
             cp package* ./dist
             cd ..
       - run:
