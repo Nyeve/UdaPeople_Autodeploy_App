@@ -67,8 +67,8 @@
 #   shell: |
 #     cd /home/ubuntu/backend 
 #     pm2 start npm --name backend -- start
-
-#---(currently running)
+#(currently running)
+# ---
 # - name: "Copy dist backend directory to EC2 server"
 #   become: yes
 #   copy:
