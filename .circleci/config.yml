@@ -308,35 +308,71 @@ jobs:
           at: ~/
       - run:
           name: Install dependencies
+          working_directory: ./.circleci/ansible
           command: |
-            apk add --update tar gzip ansible nodejs npm
-            pip install awscli
-      - run:
-          name: deploy backend
-          no_output_timeout: 30m
-          command: |
-            echo ENVIROMENT=development > "backend/.env"
-            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
-            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            apk add --no-cache \
+            python3 \
+            py3-pip \
+            && pip3 install --upgrade pip \
+            && pip3 install \
+            awscli \
+            && rm -rf /var/cache/apk/*
+            apk add --update ansible
+            apk add --update tar gzip curl
+            apk add --update openssh-client
+            apk add --update nodejs npm
+      # - run:
+      #     name: Install dependencies
+      #     command: |
+      #       apk add --update tar gzip ansible nodejs npm
+      #       pip install awscli
+      # - run:
+      #     name: deploy backend env variables
+      #     no_output_timeout: 30m
+      #     command: |
+      #       echo ENVIROMENT=development > "backend/.env"
+      #       echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+      #       echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+      #       echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+      #       echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+      #       echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+      #       echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+      #       echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+      #       echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+      #       echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
 
+      - run:
+          name: Build Backend Files
+          command: |
             cd backend
             npm i
             npm run build
             cp package* ./dist
             cd ..
-            # Zip the directory
+      - run:
+          name: Compress Dist Files
+          command: |
             tar -C backend -czvf artifact.tar.gz .
+            pwd
             cd .circleci/ansible
+
+      - run:
+          name: Deploy backend
+          command: |
             echo "Contents  of the inventory.txt file is -------"
-            cat inventory.txt
-            export ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy-backend.yml
+            export ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
+            
+            # cd backend
+            # npm i
+            # npm run build
+            # cp package* ./dist
+            # cd ..
+            # # Zip the directory
+            # tar -C backend -czvf artifact.tar.gz .
+            # cd .circleci/ansible
+            # echo "Contents  of the inventory.txt file is -------"
+            # cat inventory.txt
+            # export ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy-backend.yml
             
             # cat backend/.env
             # tar -C backend -czvf artifact.tar.gz .
@@ -410,56 +446,6 @@ jobs:
 
       - run:
           name: Save ID of old stack
-<<<<<<< HEAD
-          command: |
-            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
-            echo OldWorkflowID: "${OldWorkflowID}"
-              
-            curl -H "Content-Type: text/plain" \
-              -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
-              --request PUT --data "$OldWorkflowID" \
-              https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7}
-            
-            export FetchID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
-              --request GET https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7})
-            echo "FetchID: ${FetchID}
-
-      - run:
-          name: Update cloudfront distribution
-          command: |
-            # Change the initial stack name, as applicable to you
-            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name InitialStack --region us-east-1 --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --tags project=udapeople
-
-
-      # - run:
-      #     name: Get old stack workflow id & Update cloudfront distribution
-      #     command: |
-      #       WORKFLOWID=$(aws cloudformation \
-      #         list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-      #         --no-paginate --output text)
-      #       curl -H "Content-Type: text/plain" -H "token:${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$WORKFLOWID" https://api.memstash.io/values/WORKFLOWID
-            
-      #       aws cloudformation deploy \
-      #       --template-file .circleci/files/cloudfront.yml \
-      #       --stack-name udapeople-cloudfront \
-      #       --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
-      #       --tags project=udapeople
-      # - persist_to_workspace:
-      #     root: ~/
-      #     paths:
-      #       - project/.circleci/oldworkflowid.txt 
-      - revert-migrations:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-  cleanup:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run: yum -y install tar gzip jq npm
-      - run: yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm jq
-=======
           command: |
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
             echo OldWorkflowID: "${OldWorkflowID}"
@@ -472,7 +458,6 @@ jobs:
             export FetchID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
               --request GET https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7})
             echo "FetchID": ${FetchID}
->>>>>>> 8a98492177e1bda95ea6ae2d4f29884881e1b3aa
 
       - run:
           name: Update cloudfront distribution
