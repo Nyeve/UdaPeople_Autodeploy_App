@@ -343,7 +343,7 @@ jobs:
       #       apk add --update tar gzip ansible nodejs npm
       #       pip install awscli
       - run:
-          name: deploy backend env variables
+          name: deploy backend 
           no_output_timeout: 30m
           command: |
             cd backend
@@ -351,6 +351,7 @@ jobs:
             npm cache clean --force
             npm cache verify
             npm i
+            npm audit fix --audit-level=critical --force
             npm run build
             cd ..
             # Zip the directory
