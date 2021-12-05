@@ -346,8 +346,8 @@ jobs:
           command: |
             cd backend
             #m -rf package-lock.json.
-            #npm cache clean --force
-            #npm cache verify
+            npm cache clean --force
+            npm cache verify
             npm i
             npm run build
             cp package* ./dist
