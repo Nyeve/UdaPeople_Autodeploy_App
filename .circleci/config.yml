@@ -410,6 +410,7 @@ jobs:
 
       - run:
           name: Save ID of old stack
+<<<<<<< HEAD
           command: |
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
             echo OldWorkflowID: "${OldWorkflowID}"
@@ -458,51 +459,74 @@ jobs:
       - checkout
       - run: yum -y install tar gzip jq npm
       - run: yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm jq
+=======
+          command: |
+            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+            echo OldWorkflowID: "${OldWorkflowID}"
+              
+            curl -H "Content-Type: text/plain" \
+              -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
+              --request PUT --data "$OldWorkflowID" \
+              https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7}
+            
+            export FetchID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
+              --request GET https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7})
+            echo "FetchID": ${FetchID}
+>>>>>>> 8a98492177e1bda95ea6ae2d4f29884881e1b3aa
 
       - run:
-          name: Get Old Stack Workflow ID and Remove old stacks and files
+          name: Update cloudfront distribution
           command: |
-            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`OldWorkflowID\`].Value" --no-paginate --output text)
-            OldWorkflowID=${OldWorkflowID#udapeople-}
-            echo OldWorkflowID: "${OldWorkflowID}"
-            echo CIRCLE_WORKFLOW_ID: "${CIRCLE_WORKFLOW_ID:0:7}"
-            
-            # Fetch the stack names          
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
-            echo Stack names: "${STACKS[@]}"
-            # You can use any condition like:
-            # if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
-            # if [[ "${OldWorkflowID}" =~ "${STACKS[@]}"  ]]
-            # if [[ "${CIRCLE_WORKFLOW_ID:0:7}" =~ "${OldWorkflowID}" ]]
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-            then
-
-                # your code goes here
-              echo "Stack exist, remove....${OldWorkflowID}"
-              echo "s3://udapeople-${OldWorkflowID}"
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"                            
-            fi 
-      # - run:
-      #     name: Get old stack workflow id
-      #     command: |
-      #       OldWorkflowID=$(curl -H "token:${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/workflowid)
-      #       export OldWorkflowID="$OldWorkflowID"
-      #       echo Old Workflow Id: "${OldWorkflowID}"
-      #       # export STACKS=($(aws cloudformation list-stacks --region eu-central-1 --query "StackSummaries[*]|[?starts_with(StackName,'uda')].StackName" --stack-status-filter CREATE_COMPLETE)) 
-      #       CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
+            # Change the initial stack name, as applicable to you
+            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name InitialStack --region us-east-1 --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --tags project=udapeople
       
-      # - run:
-      #     name: Remove old stacks and files
-      #     command: |
-      #       if [[ "${CurrentWorkflowID}" != "${OldWorkflowID}" ]]
-      #       then
-      #         aws s3 rm s3://udapeople-${OldWorkflowID}/ --recursive
-      #         aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
-      #         aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
-      #       fi                    
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
+  # cleanup:
+  #   docker:
+  #     - image: amazon/aws-cli
+  #   steps:
+  #     - checkout
+  #     - run: yum -y install tar gzip jq npm
+  #     #- run: apk add --update curl npm  && pip3 install --upgrade pip && pip3 install awscli
+
+  #     - run:
+  #           name: Fetch OldStack Workflow ID
+  #           command: |
+  #             # Fetch the Old workflow ID
+  #             # Fetch the Old workflow ID
+  #             export OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
+  #             --request GET https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7})
+  #             echo OldWorkflowID: "${OldWorkflowID}"
+  #             echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
+  #     - run:
+  #         name: Remove old stacks and files
+  #         command: |
+  #             # You can use any condition like:
+  #             # if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
+  #             # if [[ "${OldWorkflowID}" =~ "${STACKS[@]}"  ]]
+  #             #if [[ "${CIRCLE_WORKFLOW_ID:0:7}" =~ "${OldWorkflowID}" ]]
+  #             #then
+  #             export OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
+  #             --request GET https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7})
+  #             echo "s3://udapeople-${OldWorkflowID}"
+  #             aws s3 ls
+  #             if aws s3 ls s3://udapeople-${OldWorkflowID} 2>&1 | grep -q 'NoSuchBucket'
+  #             then
+  #               aws s3 ls
+  #               echo "Bucket not found"
+  #               echo "--------------Cannot Cleanup ----------------"
+  #             else
+  #               echo "--------------Begin Cleanup ----------------"
+  #               aws s3 rm s3://udapeople-${OldWorkflowID} --recursive --quiet
+  #               aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+  #               aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+  #               echo "--------------Cleanup Success----------------"
+  #             fi
+                        
+  #     - revert-migrations:
+  #         workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
 workflows:
   default:
     jobs:
@@ -539,5 +563,5 @@ workflows:
           requires: [deploy-backend,deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
-      - cleanup:
-          requires: [cloudfront-update]
+      # - cleanup:
+      #     requires: [cloudfront-update]
