@@ -71,17 +71,17 @@ jobs:
             npm install
             npm run build
       - save_cache:
-          keys: [backend-build]
-          paths: ./backend/node_modules
-          
-       - run:
+          paths: [backend/node_modules]
+          key: backend-build
+              
+      - run:
             name: compile for reuse
             command: |
               mkdir /tmp/workspace/
-            cp ./backend/package.json /tmp/workspace/
-            cd backend/dist
-            tar -zcvf /tmp/workspace/backend.tar.gz ./
-            tar -zcvf ./../../backend.tar.gz ./
+              cp ./backend/package.json /tmp/workspace/
+              cd backend/dist
+              tar -zcvf /tmp/workspace/backend.tar.gz ./
+              tar -zcvf ./../../backend.tar.gz ./
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
@@ -342,10 +342,24 @@ jobs:
       #     command: |
       #       apk add --update tar gzip ansible nodejs npm
       #       pip install awscli
-        - run:
-            name: deploy backend env variables
-            no_output_timeout: 30m
-            command: |
+      - run:
+          name: deploy backend env variables
+          no_output_timeout: 30m
+          command: |
+            cd backend
+            rm -rf package-lock.json
+            npm cache clean --force
+            npm cache verify
+            npm i
+            npm run build
+            cd ..
+            # Zip the directory
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            export ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy-backend.yml
+            
       #       echo ENVIROMENT=development > "backend/.env"
       #       echo TYPEORM_CONNECTION=postgres >> "backend/.env"
       #       echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
@@ -377,19 +391,6 @@ jobs:
       #       pwd
       #       cd .circleci/ansible
             
-            cd backend
-            rm -rf package-lock.json
-            npm cache clean --force
-            npm cache verify
-            npm i
-            npm run build
-            cd ..
-            # Zip the directory
-            tar -C backend -czvf artifact.tar.gz .
-            cd .circleci/ansible
-            echo "Contents  of the inventory.txt file is -------"
-            cat inventory.txt
-            export ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy-backend.yml
             
             # cat backend/.env
             # tar -C backend -czvf artifact.tar.gz .
