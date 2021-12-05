@@ -354,12 +354,12 @@ jobs:
             
             # cp package* ./dist
             # cd ..
-      - run:
-          name: Compress Dist Files
-          command: |
-            tar -C backend -czvf artifact.tar.gz .
-            pwd
-            cd .circleci/ansible
+      # - run:
+      #     name: Compress Dist Files
+      #     command: |
+      #       tar -C backend -czvf artifact.tar.gz .
+      #       pwd
+      #       cd .circleci/ansible
 
       - run:
           name: Deploy backend
