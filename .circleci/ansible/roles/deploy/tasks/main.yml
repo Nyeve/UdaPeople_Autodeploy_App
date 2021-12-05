@@ -1,3 +1,30 @@
+---
+- name: create backend directory
+  become: yes
+  file:
+    path: ~/backend
+    state: directory
+    mode: 0755
+- name: copy backend files
+  become: yes
+  copy:
+    src: ~/project/artifact.tar.gz
+    dest: ~/backend/artifact.tar.gz
+- name: unpack backend files
+  become: yes
+  shell: |
+    cd ~/backend
+    tar -vxf artifact.tar.gz
+    rm -f artifact.tar.gz
+- name: start app 
+  become: yes
+  shell: |
+    cd ~/backend
+    npm install
+    pm2 stop default
+    pm2 start npm -- start
+    cd dist
+    pm2 start main.js --update-env
 # ---
 # - name: "install dependencies."
 #   become: true
@@ -41,41 +68,41 @@
 #     cd /home/ubuntu/backend 
 #     pm2 start npm --name backend -- start
 
----
-- name: "Copy dist backend directory to EC2 server"
-  become: yes
-  copy:
-    src: ~/project/artifact.tar.gz
-    dest: /home/ubuntu/artifact.tar.gz
+#---(currently running)
+# - name: "Copy dist backend directory to EC2 server"
+#   become: yes
+#   copy:
+#     src: ~/project/artifact.tar.gz
+#     dest: /home/ubuntu/artifact.tar.gz
 
-- name: "Install Ansible dependencies"
-  become: true
-  apt:
-    name: ["nodejs", "npm", "python3", "tar", "gzip", "git"]
-    state: latest
-    update_cache: yes    
+# - name: "Install Ansible dependencies"
+#   become: true
+#   apt:
+#     name: ["nodejs", "npm", "python3", "tar", "gzip", "git"]
+#     state: latest
+#     update_cache: yes    
 
-- name: "Create directory for backend"
-  file:
-    path: /home/ubuntu/backend/
-    state: directory
+# - name: "Create directory for backend"
+#   file:
+#     path: /home/ubuntu/backend/
+#     state: directory
 
-- name: prepare binaries
-  become: true
-  shell: |
-    cd /home/ubuntu
-    tar xvzf artifact.tar.gz -C .
+# - name: prepare binaries
+#   become: true
+#   shell: |
+#     cd /home/ubuntu
+#     tar xvzf artifact.tar.gz -C .
 
-- name: start server
-  become: true
-  shell: |
-    cd /home/ubuntu
-    npm install 
-    sudo npm install pm2 -g
-    pm2 stop default
-    pm2 start npm --name backend -- start
-  async: 45
-  poll: 0
+# - name: start server
+#   become: true
+#   shell: |
+#     cd /home/ubuntu
+#     npm install 
+#     sudo npm install pm2 -g
+#     pm2 stop default
+#     pm2 start npm --name backend -- start
+#   async: 45
+#   poll: 0
     
 
 #- name: "clean up server"
