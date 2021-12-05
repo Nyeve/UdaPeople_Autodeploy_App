@@ -364,6 +364,9 @@ jobs:
       - run:
           name: Deploy backend
           command: |
+            ls -a ./backend
+            cp -r ./backend/dist .circleci/ansible/roles/deploy/files
+            cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             export ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
             
