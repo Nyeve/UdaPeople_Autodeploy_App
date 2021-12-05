@@ -341,19 +341,19 @@ jobs:
       #       echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
       #       echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
 
-      - run:
-          name: Build Backend Files
-          command: |
-            cd backend
-            rm -rf package-lock.json.
-            npm cache clean --force
-            npm cache verify
-            npm i
-            npm audit fix --audit-level=critical --force
-            npm run build
+      # - run:
+      #     name: Build Backend Files
+      #     command: |
+      #       cd backend
+            # rm -rf package-lock.json.
+            # npm cache clean --force
+            # npm cache verify
+            # npm i
+            # npm audit fix --audit-level=critical --force
+            # npm run build
             
-            cp package* ./dist
-            cd ..
+            # cp package* ./dist
+            # cd ..
       - run:
           name: Compress Dist Files
           command: |
