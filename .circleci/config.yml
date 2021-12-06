@@ -348,13 +348,14 @@ jobs:
           command: |
             cd backend
             #rm -rf package-lock.json
+            rm -rf node_modules
             npm cache clean --force
             npm cache verify
             npm i -f
             npm install -g npm-install-peers
             npm audit fix --audit-level=critical --force
             npm run build
-            #tsc -p tsconfig.build.json
+            npm start
             cd ..
             # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
