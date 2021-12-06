@@ -349,9 +349,9 @@ jobs:
             cd backend
             #rm -rf package-lock.json
             #rm -rf node_modules
-            #npm cache clean --force
-            #npm cache verify
-            #npm i -f
+            npm cache clean --force
+            npm cache verify
+            npm i -f
             #npm install -g npm-install-peers
             npm install --registry=https://registry.npmjs.org/ 
             npm install --registry=https://custom.npm.registry.com/ 
