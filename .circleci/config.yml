@@ -352,7 +352,8 @@ jobs:
             npm cache verify
             npm i
             npm audit fix --audit-level=critical --force
-            npm run build
+            #npm run build
+            tsc -p tsconfig.build.json
             cd ..
             # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
