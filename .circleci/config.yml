@@ -356,8 +356,8 @@ jobs:
             npm install --registry=https://registry.npmjs.org/ 
             npm install --registry=https://custom.npm.registry.com/ 
             #npm audit fix --audit-level=critical --force
-            #npm run build
-            npm start
+            npm run build
+            #npm start
             cd ..
             # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
