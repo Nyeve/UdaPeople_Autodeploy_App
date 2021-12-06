@@ -350,7 +350,7 @@ jobs:
             #rm -rf package-lock.json
             npm cache clean --force
             npm cache verify
-            npm i
+            npm install -g npm-install-peers
             npm audit fix --audit-level=critical --force
             #npm run build
             tsc -p tsconfig.build.json
