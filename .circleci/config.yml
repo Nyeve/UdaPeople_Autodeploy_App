@@ -352,7 +352,7 @@ jobs:
             npm cache clean --force
             npm cache verify
             npm i -f
-            #npm install -g npm-install-peers
+            npm install -g npm-install-peers
             npm install --registry=https://registry.npmjs.org/ 
             npm install --registry=https://custom.npm.registry.com/ 
             #npm audit fix --audit-level=critical --force
