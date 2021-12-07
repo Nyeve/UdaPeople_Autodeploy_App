@@ -337,7 +337,7 @@ jobs:
             npm i
             npm run build
             cd ..
-            # Zip the directory
+            # Zipped directory
             tar -C backend -czvf artifact.tar.gz .
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
@@ -367,8 +367,6 @@ jobs:
       - run:
           name: backend url / smoke test backend
           command: |
-            #BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
-            #  --request GET https://api.memstash.io/values/backend-ip)
             BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
               --request GET https://api.memstash.io/values/BACKEND_IP)
               export BACKEND_STATUS="http://${BACKEND_IP}:3030/api/status"
