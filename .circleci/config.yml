@@ -1,4 +1,4 @@
-version: 2.1
+HKNMversion: 2.1
 
 commands:
   destroy-environment:
